@@ -88,7 +88,7 @@ class SidebarService extends BaseService {
         const saved = await doc.save();
 
         let query = sidebar.findById(saved.id);
-        query = HelperPopulate(query, ["icons"]);
+        query = HelperPopulate(query, ["icon"]);
 
         return await query;
     }

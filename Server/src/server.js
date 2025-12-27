@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './db.js';
+
 import authRoute from './modules/auth/auth.route.js';
 import productRoute from './modules/product/product.route.js';
 import categoryRoute from './modules/category/category.route.js';
@@ -14,6 +15,13 @@ import sidebarRoute from './modules/sidebar/sidebar.route.js';
 import roleRoute from './modules/role/role.route.js';
 import userRoleRoute from './modules/user-role/user-role.route.js';
 import userRoute from './modules/auth/user.route.js';
+import voucherRoute from './modules/auth/user.route.js';
+import orderRoute from './modules/auth/user.route.js';
+import orderMethodRoute from './modules/auth/user.route.js';
+import paymentMethodRoute from './modules/auth/user.route.js';
+import cartRoute from './modules/auth/user.route.js';
+import customerRoute from './modules/auth/user.route.js';
+import customerTypeRoute from './modules/auth/user.route.js';
 
 import { AuthMiddleware } from './common/middleware/base.middleware.js';
 
@@ -34,6 +42,13 @@ app.use('/icon', AuthMiddleware, iconRoute);
 app.use('/sidebar', AuthMiddleware, sidebarRoute);
 app.use('/role', AuthMiddleware, roleRoute);
 app.use('/user-role', AuthMiddleware, userRoleRoute);
+app.use('/voucher', AuthMiddleware, voucherRoute);
+app.use('/order', AuthMiddleware, orderRoute);
+app.use('/order-method', AuthMiddleware, AuthMiddleware, orderMethodRoute);
+app.use('/payment-method', AuthMiddleware, paymentMethodRoute);
+app.use('/cart', AuthMiddleware, cartRoute);
+app.use('/customer', AuthMiddleware, customerRoute);
+app.use('/customer-type', AuthMiddleware, customerTypeRoute);
 
 connectDB()
     .then(() => {

@@ -5,16 +5,17 @@ import { baseSchema } from "../../common/base/base.model.js";
 
 const orderSchema = new mongoose.Schema({
     ...baseSchema,
-    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "customer", required: true },
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "customer" },
     orderItem: [{
         productId: { type: mongoose.Schema.Types.ObjectId, ref: "product", required: true },
         quantity: { type: Number, default: 0, required: true },
         price: { type: Number, default: 0, required: true },
         total: { type: Number, default: 0, required: true },
     }],
+    status: { type: String, default: "draft", required: true },
     orderMethodId: { type: mongoose.Schema.Types.ObjectId, ref: "orderMethod", required: true },
     paymentMethodId: { type: mongoose.Schema.Types.ObjectId, ref: "paymentMethod", required: true },
-    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "employee", required: true },
+    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "employee", required: false },
     voucherId: { type: mongoose.Schema.Types.ObjectId, ref: "voucher", required: false },
 })
 
