@@ -1,28 +1,25 @@
 'use client'
-import { userService } from '@/common/services/user-service'
-import { useUserStore } from '@/common/stores/user.store'
+import { paymentMethodService } from '@/common/services/payment-method-service'
+import { useOrderStore } from '@/common/stores/order.store'
 import MiniShopCard from '@/shared/components/MiniShopCard'
 import MiniShopTable, { Column } from '@/shared/components/table/MiniShopTable'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { Button, Grid } from '@mui/material'
 import MiniShopSearchBar from '@/shared/components/MiniShopSearchBar'
-import { useProductStore } from '@/common/stores/product.store'
-import { IUser } from '@/common/interface/user-interface'
+import { IPaymentMethod } from '@/common/interface/payment-method-interface'
 import EditCreateDialog from './components/EditCreateDialog'
 import AlertDialog from './components/AlertDialog'
 import DetailDialog from './components/DetailDialog'
 
-const columns: Column<IUser>[] = [
+const columns: Column<IPaymentMethod>[] = [
     { id: 'code', label: 'Code', minWidth: 100 },
-    { id: 'fullname', label: 'Tên người dùng', minWidth: 150 },
-    { id: 'username', label: 'Username', minWidth: 150 },
-    { id: 'email', label: 'Email', minWidth: 150 },
+    { id: 'name', label: 'Tên người dùng', minWidth: 150 },
     { id: 'description', label: 'Mô tả', minWidth: 200 },
     { id: 'isActive', label: 'Kích hoạt', minWidth: 100, align: 'center' },
 ];
 
-const UserPage = () => {
+const PaymentMethodPage = () => {
     const [page, setPage] = useState<number>(0)
     const [limit, setLimit] = useState<number>(10)
     const queryClient = useQueryClient();
@@ -33,64 +30,64 @@ const UserPage = () => {
     const [type, setType] = useState<"changeStatus" | "deleteSoft" | "deleteHard">("changeStatus");
     const [filter, setFilter] = useState<{ field: string, value: string }>({ field: "", value: "" })
     const {
-        setSelectedUser: setSelectedUser,
-        setUsers: setUsers,
-    } = useUserStore()
+        setSelectedPaymentMethod: setSelectedPaymentMethod,
+        setPaymentMethods: setPaymentMethods,
+    } = useOrderStore();
 
-    const fetchUser = async (page: number, limit: number, field: string, value: string) => {
+    const fetchPaymentMethod = async (page: number, limit: number, field: string, value: string) => {
         try {
-            const res = await userService.getAll(page + 1, limit, field, value);
+            const res = await paymentMethodService.getAll(page + 1, limit, field, value);
 
             if (!res?.payload?.isSuccess) {
-                throw new Error(res?.payload?.message || "Fetch user failed");
+                throw new Error(res?.payload?.message || "Fetch paymentMethod failed");
             }
 
             const data = res;
-            setUsers(data?.payload?.data ?? []);
+            setPaymentMethods(data?.payload?.data ?? []);
             return data;
         } catch (err) {
-            console.error("Fetch user error:", err);
+            console.error("Fetch paymentMethod error:", err);
             throw err;
         }
     };
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['users', page, limit, filter],
-        queryFn: () => fetchUser(page, limit, filter.field, filter.value),
+        queryKey: ['paymentMethods', page, limit, filter],
+        queryFn: () => fetchPaymentMethod(page, limit, filter.field, filter.value),
         placeholderData: (previousData) => previousData,
         refetchOnWindowFocus: false,
     });
 
-    const editRecord = (data: IUser) => {
+    const editRecord = (data: IPaymentMethod) => {
         console.log("data", data)
-        setSelectedUser(data)
+        setSelectedPaymentMethod(data)
         setOpenDialogEditCreate(true)
     }
 
     const createRecord = () => {
-        setSelectedUser(null)
+        setSelectedPaymentMethod(null)
         setOpenDialogEditCreate(true)
     }
 
     const handleCloseDialogEditCreate = () => {
-        queryClient.invalidateQueries({ queryKey: ['users', page, limit, filter] });
+        queryClient.invalidateQueries({ queryKey: ['paymentMethods', page, limit, filter] });
         setOpenDialogEditCreate(false)
     }
 
-    const handleChangeStatus = (data: IUser) => {
+    const handleChangeStatus = (data: IPaymentMethod) => {
         setType("changeStatus")
-        setSelectedUser(data)
+        setSelectedPaymentMethod(data)
         setOpenDialogAlter(true)
     }
 
-    const handleDelete = (data: IUser, typeDelete: "deleteSoft" | "deleteHard") => {
+    const handleDelete = (data: IPaymentMethod, typeDelete: "deleteSoft" | "deleteHard") => {
         setType(typeDelete)
-        setSelectedUser(data)
+        setSelectedPaymentMethod(data)
         setOpenDialogAlter(true)
     }
 
-    const handleView = (data: IUser) => {
-        setSelectedUser(data)
+    const handleView = (data: IPaymentMethod) => {
+        setSelectedPaymentMethod(data)
         setOpenDialogDetail(true)
     }
 
@@ -99,7 +96,7 @@ const UserPage = () => {
     }
 
     const handleCloseDialogAlter = () => {
-        queryClient.invalidateQueries({ queryKey: ['users', page, limit, filter] });
+        queryClient.invalidateQueries({ queryKey: ['paymentMethods', page, limit, filter] });
         setOpenDialogAlter(false)
     }
 
@@ -112,7 +109,7 @@ const UserPage = () => {
     if (isError) return <div>Error: {error.message}</div>;
 
     return (
-        <MiniShopCard title='User Page'>
+        <MiniShopCard title='PaymentMethod Page'>
             <Grid
                 container
                 spacing={2}
@@ -142,7 +139,7 @@ const UserPage = () => {
                 </Grid>
 
             </Grid>
-            <MiniShopTable<IUser>
+            <MiniShopTable<IPaymentMethod>
                 serverSide={true}
                 columns={columns}
                 rows={data?.payload?.data ?? []}
@@ -151,9 +148,9 @@ const UserPage = () => {
                 onDeleteHard={(row) => handleDelete(row, "deleteHard")}
                 onToggleStatus={(row) => handleChangeStatus(row)}
                 onRowClick={(row) => handleView(row)}
-                onPageChange={(page, pageUser) => {
+                onPageChange={(page, pagePaymentMethod) => {
                     setPage(page)
-                    setLimit(pageUser)
+                    setLimit(pagePaymentMethod)
                 }}
                 pageSize={limit}
                 totalCount={data?.payload?.total ?? 0}
@@ -165,5 +162,5 @@ const UserPage = () => {
     )
 }
 
-export default UserPage;
+export default PaymentMethodPage;
 

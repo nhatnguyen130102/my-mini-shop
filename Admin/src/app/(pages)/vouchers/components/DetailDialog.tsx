@@ -8,7 +8,7 @@ import {
     Toolbar,
     Slide,
 } from "@mui/material";
-import { useOrderStore } from "@/common/stores/order.store";
+import { useVoucherStore } from "@/common/stores/voucher.store";
 import * as React from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { TransitionProps } from "@mui/material/transitions";
@@ -30,8 +30,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
     open,
     onClose,
 }) => {
-    const { selectedOrderMethod } = useOrderStore();
-    if (!selectedOrderMethod) return null;
+    const { selectedVoucher } = useVoucherStore();
+    if (!selectedVoucher) return null;
 
     return (
         <Dialog

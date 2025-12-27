@@ -1,12 +1,12 @@
 import * as yup from 'yup';
 
-export const initalOrderMethodValue = {
+export const initalPaymentMethodValue = {
     description: "",
     isActive: false,
     name: "",
 };
 
-export const orderMethodValueSchema = yup.object({
+export const paymentMethodValueSchema = yup.object({
     name: yup
         .string()
         .required("Tên phương thức đặt hàng là bắt buộc")

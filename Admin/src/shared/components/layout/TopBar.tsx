@@ -5,22 +5,22 @@ import { useSidebar } from '@/shared/context/SidebarContext';
 import ThemeSwitch from '../ThemeSwitch';
 
 export const TopBar = () => {
-    const { togglePin } = useSidebar();
-
+    const { toggleOpen } = useSidebar();
     return (
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }}>
+        <AppBar position="fixed" sx={{ zIndex: theme => theme.zIndex.drawer + 2 }}>
             <Toolbar>
                 <IconButton
-                    color="inherit"
-                    edge="start"
-                    onClick={togglePin}
-                    sx={{ mr: 2, display: { md: 'none' } }}
-                >
+                    onClick={() => {
+                        toggleOpen()
+                    }}
+                    sx={{
+                        mr: 2, color: 'white',
+                        '&:hover': { color: 'black' }
+                    }}>
                     <MenuIcon />
                 </IconButton>
-                <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
-                    Admin Dashboard
-                </Typography>
+                <Typography variant="h6">Admin Dashboard</Typography>
+                <Box sx={{ flexGrow: 1 }} />
                 <ThemeSwitch />
             </Toolbar>
         </AppBar>

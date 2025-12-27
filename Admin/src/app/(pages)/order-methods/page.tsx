@@ -1,28 +1,25 @@
 'use client'
-import { userService } from '@/common/services/user-service'
-import { useUserStore } from '@/common/stores/user.store'
+import { orderMethodService } from '@/common/services/order-method-service'
 import MiniShopCard from '@/shared/components/MiniShopCard'
 import MiniShopTable, { Column } from '@/shared/components/table/MiniShopTable'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { Button, Grid } from '@mui/material'
 import MiniShopSearchBar from '@/shared/components/MiniShopSearchBar'
-import { useProductStore } from '@/common/stores/product.store'
-import { IUser } from '@/common/interface/user-interface'
+import { useOrderStore } from '@/common/stores/order.store'
+import { IOrderMethod } from '@/common/interface/order-method-interface'
 import EditCreateDialog from './components/EditCreateDialog'
 import AlertDialog from './components/AlertDialog'
 import DetailDialog from './components/DetailDialog'
 
-const columns: Column<IUser>[] = [
+const columns: Column<IOrderMethod>[] = [
     { id: 'code', label: 'Code', minWidth: 100 },
-    { id: 'fullname', label: 'Tên người dùng', minWidth: 150 },
-    { id: 'username', label: 'Username', minWidth: 150 },
-    { id: 'email', label: 'Email', minWidth: 150 },
+    { id: 'name', label: 'OrderMethodname', minWidth: 150 },
     { id: 'description', label: 'Mô tả', minWidth: 200 },
     { id: 'isActive', label: 'Kích hoạt', minWidth: 100, align: 'center' },
 ];
 
-const UserPage = () => {
+const OrderMethodPage = () => {
     const [page, setPage] = useState<number>(0)
     const [limit, setLimit] = useState<number>(10)
     const queryClient = useQueryClient();
@@ -33,67 +30,64 @@ const UserPage = () => {
     const [type, setType] = useState<"changeStatus" | "deleteSoft" | "deleteHard">("changeStatus");
     const [filter, setFilter] = useState<{ field: string, value: string }>({ field: "", value: "" })
     const {
-        setSelectedUser: setSelectedUser,
-    } = useUserStore()
+        setSelectedOrderMethod: setSelectedOrderMethod,
+        setOrderMethods: setOrderMethods,
+    } = useOrderStore()
 
-    const {
-        setUsers: setUsers,
-    } = useUserStore()
-
-    const fetchUser = async (page: number, limit: number, field: string, value: string) => {
+    const fetchOrderMethod = async (page: number, limit: number, field: string, value: string) => {
         try {
-            const res = await userService.getAll(page + 1, limit, field, value);
+            const res = await orderMethodService.getAll(page + 1, limit, field, value);
 
             if (!res?.payload?.isSuccess) {
-                throw new Error(res?.payload?.message || "Fetch user failed");
+                throw new Error(res?.payload?.message || "Fetch orderMethod failed");
             }
 
             const data = res;
-            setUsers(data?.payload?.data ?? []);
+            setOrderMethods(data?.payload?.data ?? []);
             return data;
         } catch (err) {
-            console.error("Fetch user error:", err);
+            console.error("Fetch orderMethod error:", err);
             throw err;
         }
     };
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['users', page, limit, filter],
-        queryFn: () => fetchUser(page, limit, filter.field, filter.value),
+        queryKey: ['orderMethods', page, limit, filter],
+        queryFn: () => fetchOrderMethod(page, limit, filter.field, filter.value),
         placeholderData: (previousData) => previousData,
         refetchOnWindowFocus: false,
     });
 
-    const editRecord = (data: IUser) => {
+    const editRecord = (data: IOrderMethod) => {
         console.log("data", data)
-        setSelectedUser(data)
+        setSelectedOrderMethod(data)
         setOpenDialogEditCreate(true)
     }
 
     const createRecord = () => {
-        setSelectedUser(null)
+        setSelectedOrderMethod(null)
         setOpenDialogEditCreate(true)
     }
 
     const handleCloseDialogEditCreate = () => {
-        queryClient.invalidateQueries({ queryKey: ['users', page, limit, filter] });
+        queryClient.invalidateQueries({ queryKey: ['orderMethods', page, limit, filter] });
         setOpenDialogEditCreate(false)
     }
 
-    const handleChangeStatus = (data: IUser) => {
+    const handleChangeStatus = (data: IOrderMethod) => {
         setType("changeStatus")
-        setSelectedUser(data)
+        setSelectedOrderMethod(data)
         setOpenDialogAlter(true)
     }
 
-    const handleDelete = (data: IUser, typeDelete: "deleteSoft" | "deleteHard") => {
+    const handleDelete = (data: IOrderMethod, typeDelete: "deleteSoft" | "deleteHard") => {
         setType(typeDelete)
-        setSelectedUser(data)
+        setSelectedOrderMethod(data)
         setOpenDialogAlter(true)
     }
 
-    const handleView = (data: IUser) => {
-        setSelectedUser(data)
+    const handleView = (data: IOrderMethod) => {
+        setSelectedOrderMethod(data)
         setOpenDialogDetail(true)
     }
 
@@ -102,7 +96,7 @@ const UserPage = () => {
     }
 
     const handleCloseDialogAlter = () => {
-        queryClient.invalidateQueries({ queryKey: ['users', page, limit, filter] });
+        queryClient.invalidateQueries({ queryKey: ['orderMethods', page, limit, filter] });
         setOpenDialogAlter(false)
     }
 
@@ -115,7 +109,7 @@ const UserPage = () => {
     if (isError) return <div>Error: {error.message}</div>;
 
     return (
-        <MiniShopCard title='User Page'>
+        <MiniShopCard title='OrderMethod Page'>
             <Grid
                 container
                 spacing={2}
@@ -145,7 +139,7 @@ const UserPage = () => {
                 </Grid>
 
             </Grid>
-            <MiniShopTable<IUser>
+            <MiniShopTable<IOrderMethod>
                 serverSide={true}
                 columns={columns}
                 rows={data?.payload?.data ?? []}
@@ -154,9 +148,9 @@ const UserPage = () => {
                 onDeleteHard={(row) => handleDelete(row, "deleteHard")}
                 onToggleStatus={(row) => handleChangeStatus(row)}
                 onRowClick={(row) => handleView(row)}
-                onPageChange={(page, pageUser) => {
+                onPageChange={(page, pageOrderMethod) => {
                     setPage(page)
-                    setLimit(pageUser)
+                    setLimit(pageOrderMethod)
                 }}
                 pageSize={limit}
                 totalCount={data?.payload?.total ?? 0}
@@ -168,5 +162,5 @@ const UserPage = () => {
     )
 }
 
-export default UserPage;
+export default OrderMethodPage;
 

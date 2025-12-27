@@ -12,22 +12,16 @@ import {
     Switch,
     FormControlLabel,
     Divider,
-    TextField,
 } from '@mui/material';
-import CloseSidebar from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import { TransitionProps } from '@mui/material/transitions';
 import { useFormik } from 'formik';
 import { useEffect } from 'react';
-import { useSidebarStore } from '@/common/stores/sidebar.store';
-
-import { sidebarService } from '@/common/services/sidebar-service';
+import { useOrderStore } from '@/common/stores/order.store';
+import { initalPaymentMethodValue, paymentMethodValueSchema } from '../validate';
+import { paymentMethodService } from '@/common/services/payment-method-service';
 import { useNotify } from '@/shared/hooks/useNotify';
 import MiniShopTextField from '@/shared/components/MiniShopTextField';
-import { initalSidebarValue, sidebarValueSchema } from '../validate';
-import { iconService } from '@/common/services/icon-service';
-import MiniShopSelectField from '@/shared/components/MiniShopSelectField';
-import { iconMap } from '@/shared/constants/iconMap';
-import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
 import MiniShopDialog from '@/shared/components/MiniShopDialog';
 
 const Transition = React.forwardRef(function Transition(
@@ -48,49 +42,28 @@ interface EditCreateDialogProps {
 export default function EditCreateDialog({ open, onClose }: EditCreateDialogProps) {
     const { notify } = useNotify();
     const {
-        selectedSidebar,
-        icons: icons,
-        setIcons: setIcons,
-        sidebars: sidebars,
-        selectedParentSidebar: selectedParentSidebar,
-    } = useSidebarStore();
+        selectedPaymentMethod,
+    } = useOrderStore();
 
-    const title = selectedSidebar
-        ? `Edit Sidebar: ${selectedSidebar.name}`
-        : 'Create Sidebar';
-
-    const allIconName: { id: string; name: string; icon: React.ElementType }[] = React.useMemo(
-        () =>
-            icons.map((item) => ({
-                id: item.id,
-                name: item.name,
-                icon: iconMap[item.iconName] || ViewSidebarOutlinedIcon,
-            })),
-        [icons]
-    );
-
-    const allSidebar: { id: string, name: string }[] = React.useMemo(() =>
-        sidebars.map((item) => ({
-            id: item.id,
-            name: item.name,
-        }))
-        , [sidebars])
+    const title = selectedPaymentMethod
+        ? `Edit Order Method: ${selectedPaymentMethod.code}`
+        : 'Create Order Method';
 
     /* ===================== FORMIK ===================== */
     const formik = useFormik({
-        initialValues: initalSidebarValue,
-        validationSchema: sidebarValueSchema,
+        initialValues: initalPaymentMethodValue,
+        validationSchema: paymentMethodValueSchema,
         onSubmit: async (values) => {
             try {
                 let res;
 
-                if (selectedSidebar?.id) {
-                    res = await sidebarService.update(selectedSidebar.id, {
+                if (selectedPaymentMethod?.id) {
+                    res = await paymentMethodService.update(selectedPaymentMethod.id, {
                         ...values,
-                        id: selectedSidebar.id,
+                        id: selectedPaymentMethod.id,
                     });
                 } else {
-                    res = await sidebarService.create(values);
+                    res = await paymentMethodService.create(values);
                 }
 
                 notify({
@@ -111,40 +84,21 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
     });
 
     /* ===================== FETCH MASTER DATA ===================== */
-    const lastSegment = selectedSidebar?.path?.split("/").pop() ?? "";
-
 
     useEffect(() => {
         if (open) {
             formik.resetForm({
                 values: {
-                    path: lastSegment,
-                    parentId: selectedSidebar?.parentId ?? selectedParentSidebar?.id ?? "",
-                    iconId: selectedSidebar?.iconId ?? "",
-                    name: selectedSidebar?.name ?? '',
-                    description: selectedSidebar?.description ?? '',
-                    isActive: selectedSidebar?.isActive ?? true,
+                    description: selectedPaymentMethod?.description ?? '',
+                    isActive: selectedPaymentMethod?.isActive ?? true,
+                    name: selectedPaymentMethod?.name ?? '',
                 },
             });
         }
-    }, [open, selectedSidebar]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [resIcon] = await Promise.all([
-                    iconService.getAll(),
-                ]);
-
-                setIcons(resIcon?.payload?.data ?? []);
-            } catch (err) {
-                console.error('Fetch data error:', err);
-            }
-        };
-        fetchData();
-    }, []);
+    }, [open, selectedPaymentMethod]);
 
     return (
+
         <MiniShopDialog
             open={open}
             onClose={onClose}
@@ -175,31 +129,8 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
                     required
                     formik={formik}
                     name="name"
-                    label="Tên sidebar"
-                    placeholder="Nhập tên sidebar"
-                />
-
-                <MiniShopSelectField
-                    disabled={selectedSidebar == null}
-                    formik={formik}
-                    name="parentId"
-                    label="Mục cha"
-                    options={allSidebar}
-                />
-
-                <MiniShopSelectField
-                    required
-                    formik={formik}
-                    name="iconId"
-                    label="Icon"
-                    options={allIconName}
-                />
-
-                <MiniShopTextField
-                    formik={formik}
-                    name="path"
-                    label="Path"
-                    placeholder="Nhập tên đường dẫn cuối"
+                    label="Name"
+                    placeholder="Nhập tênf"
                 />
 
                 <MiniShopTextField
@@ -211,7 +142,6 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
                     label="Mô tả"
                     placeholder="Nhập mô tả"
                 />
-
             </Grid>
         </MiniShopDialog>
     );

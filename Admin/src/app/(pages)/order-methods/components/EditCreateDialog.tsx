@@ -17,9 +17,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { TransitionProps } from '@mui/material/transitions';
 import { useFormik } from 'formik';
 import { useEffect } from 'react';
-import { useUserStore } from '@/common/stores/user.store';
-import { initalUserValue, userValueSchema } from '../validate';
-import { userService } from '@/common/services/user-service';
+import { useOrderStore } from '@/common/stores/order.store';
+import { initalOrderMethodValue, orderMethodValueSchema } from '../validate';
+import { orderMethodService } from '@/common/services/order-method-service';
 import { useNotify } from '@/shared/hooks/useNotify';
 import MiniShopTextField from '@/shared/components/MiniShopTextField';
 import MiniShopDialog from '@/shared/components/MiniShopDialog';
@@ -42,32 +42,28 @@ interface EditCreateDialogProps {
 export default function EditCreateDialog({ open, onClose }: EditCreateDialogProps) {
     const { notify } = useNotify();
     const {
-        selectedUser,
-    } = useUserStore();
+        selectedOrderMethod,
+    } = useOrderStore();
 
-    const title = selectedUser
-        ? `Edit User: ${selectedUser.username}`
-        : 'Create User';
+    const title = selectedOrderMethod
+        ? `Edit Order Method: ${selectedOrderMethod.code}`
+        : 'Create Order Method';
 
     /* ===================== FORMIK ===================== */
     const formik = useFormik({
-        initialValues: initalUserValue,
-        validationSchema: userValueSchema,
+        initialValues: initalOrderMethodValue,
+        validationSchema: orderMethodValueSchema,
         onSubmit: async (values) => {
             try {
                 let res;
 
-                if (selectedUser?.id) {
-                    res = await userService.update(selectedUser.id, {
+                if (selectedOrderMethod?.id) {
+                    res = await orderMethodService.update(selectedOrderMethod.id, {
                         ...values,
-                        id: selectedUser.id,
-                        name: values.email.split("@")[0],
+                        id: selectedOrderMethod.id,
                     });
                 } else {
-                    res = await userService.create({
-                        ...values,
-                        name: values.email.split("@")[0],
-                    });
+                    res = await orderMethodService.create(values);
                 }
 
                 notify({
@@ -93,17 +89,13 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
         if (open) {
             formik.resetForm({
                 values: {
-                    name: selectedUser?.name ?? '',
-                    description: selectedUser?.description ?? '',
-                    isActive: selectedUser?.isActive ?? true,
-                    email: selectedUser?.email ?? '',
-                    username: selectedUser?.username ?? '',
-                    password: selectedUser?.password ?? '',
-                    fullname: selectedUser?.fullname ?? '',
+                    description: selectedOrderMethod?.description ?? '',
+                    isActive: selectedOrderMethod?.isActive ?? true,
+                    name: selectedOrderMethod?.name ?? '',
                 },
             });
         }
-    }, [open, selectedUser]);
+    }, [open, selectedOrderMethod]);
 
     return (
 
@@ -136,40 +128,10 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
                 <MiniShopTextField
                     required
                     formik={formik}
-                    name="fullname"
-                    label="Tên người dùng"
-                    placeholder="Nhập tên người dùng"
+                    name="name"
+                    label="Name"
+                    placeholder="Nhập tênf"
                 />
-
-                <MiniShopTextField
-                    required
-                    formik={formik}
-                    name="email"
-                    label="Email"
-                    placeholder="Nhập email"
-                />
-
-                <MiniShopTextField
-                    required
-                    formik={formik}
-                    name="username"
-                    label="Username"
-                    placeholder="Nhập username"
-                />
-
-                {
-                    !selectedUser?.id && (
-                        <MiniShopTextField
-                            required
-                            formik={formik}
-                            name="password"
-                            label="Password"
-                            placeholder="Nhập password"
-                        />
-                    )
-                }
-
-
 
                 <MiniShopTextField
                     gridSize={12}
@@ -180,7 +142,6 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
                     label="Mô tả"
                     placeholder="Nhập mô tả"
                 />
-
             </Grid>
         </MiniShopDialog>
     );

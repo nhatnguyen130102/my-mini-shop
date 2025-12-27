@@ -4,65 +4,81 @@ import { ExpandLess, ExpandMore, FiberManualRecord } from '@mui/icons-material';
 import { iconMap } from '@/shared/constants/iconMap';
 import { ISidebarTree } from '@/common/interface/sidebar-interface';
 import { useRouter } from 'next/navigation';
+import { useSidebar } from '@/shared/context/SidebarContext';
+import { useEffect } from 'react';
 
 export interface SidebarMenuItemProps {
     item: ISidebarTree;
     level?: number;
-    isOpen: boolean;
-    isExpanded: boolean;
-    onExpandChange?: (id: string, expanded: boolean) => void;
 }
 
-export const SidebarMenuItem = ({ item, level = 0, isOpen, isExpanded, onExpandChange }: SidebarMenuItemProps) => {
-    const hasChildren = item.children && item.children.length > 0;
-    const IconComponent = iconMap[item.icon.iconName] ?? FiberManualRecord;
+export const SidebarMenuItem = ({ item, level = 0 }: SidebarMenuItemProps) => {
+    const { expandedItems, setExpanded, isOpenFull, isHovered, isPinned } = useSidebar();
     const router = useRouter();
+
+    const hasChildren = item.children?.length > 0;
+    const isExpanded = expandedItems.has(item.id);
+    const IconComponent = iconMap[item.icon.iconName] ?? FiberManualRecord;
+
+    const handleClick = () => {
+        if (hasChildren) {
+            setExpanded(item.id, !isExpanded);
+        } else {
+            router.push(item.path);
+        }
+    };
+
     return (
         <>
             <ListItemButton
-                onClick={() => hasChildren ? onExpandChange?.(item.id, !isExpanded) : router.push(item.path)}
+                onClick={handleClick}
                 sx={{
                     minHeight: 48,
                     mb: 0.5,
                     px: 2,
-                    justifyContent: isOpen ? 'initial' : 'center',
+                    justifyContent: (isOpenFull || (isPinned && isHovered)) ? 'flex-start' : 'center',
                 }}
+                className='list-item-button'
             >
-                <ListItemIcon sx={{
-                    minWidth: 0,
-                    mr: isOpen ? 2 : 'auto',
-                    justifyContent: 'center',
-                    color: 'inherit'
-                }}>
+                <ListItemIcon
+                    sx={{
+                        minWidth: 0,
+                        mr: (isOpenFull || (isPinned && isHovered)) ? 2 : 0,
+                        justifyContent: 'center',
+                        color: 'inherit',
+                    }}
+                    className='list-item-button icon'
+
+                >
                     <IconComponent />
                 </ListItemIcon>
 
                 <ListItemText
                     primary={item.name}
                     sx={{
-                        opacity: isOpen ? 1 : 0,
                         transition: 'opacity 0.2s',
                         whiteSpace: 'nowrap',
-                        overflow: 'hidden',
+                        // overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        display: (isOpenFull || (isPinned && isHovered)) ? 'block' : 'none',
+                        opacity: (isOpenFull || (isPinned && isHovered)) ? 1 : 0,
                     }}
+                    className='list-item-button text'
                 />
 
-                {hasChildren && isOpen && (
+                {hasChildren && isHovered && (
                     isExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />
                 )}
             </ListItemButton>
 
             {hasChildren && (
-                <Collapse in={isExpanded && isOpen} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding sx={{ paddingLeft: "8px" }}>
-                        {item.children.map((child: any) => (
+                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding sx={{ pl: 2 }}>
+                        {item.children.map(child => (
                             <SidebarMenuItem
                                 key={child.id}
                                 item={child}
                                 level={level + 1}
-                                isOpen={isOpen}
-                                isExpanded={false}
                             />
                         ))}
                     </List>

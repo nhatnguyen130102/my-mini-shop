@@ -30,8 +30,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
     open,
     onClose,
 }) => {
-    const { selectedOrderMethod } = useOrderStore();
-    if (!selectedOrderMethod) return null;
+    const { selectedPaymentMethod } = useOrderStore();
+    if (!selectedPaymentMethod) return null;
 
     return (
         <Dialog

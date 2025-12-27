@@ -1,18 +1,10 @@
-import { BaseEntity } from "./base-interface";
+import { BaseEntity, IItemDetail } from "./base-interface";
 import { ICustomer } from "./customer-interface";
 import { IEmployee } from "./employee-interface";
 import { IOrderMethod } from "./order-method-interface";
 import { IPaymentMethod } from "./payment-method-interface";
-import { IProduct } from "./product-interface";
-import { IVoucher } from "./voucher-inteface";
+import { IVoucher } from "./voucher-interface";
 
-export interface IOrderItem {
-    productId: string;
-    product: IProduct;
-    quantity: number;
-    price: number;
-    total: number;
-}
 
 export interface IOrder extends BaseEntity, UpdateOrderPayload {
     isDeleted: boolean,
@@ -21,6 +13,7 @@ export interface IOrder extends BaseEntity, UpdateOrderPayload {
     paymentMethod: IPaymentMethod,
     employee: IEmployee,
     voucher: IVoucher,
+    name: string,
 }
 
 export interface UpdateOrderPayload extends CreateOrderPayload {
@@ -30,10 +23,11 @@ export interface UpdateOrderPayload extends CreateOrderPayload {
 export interface CreateOrderPayload {
     isActive: boolean,
     description: string,
-    name: string,
     orderMethodId: string,
     paymentMethodId: string,
-    employeeId: string,
-    voucherId: string,
-    orderItem: IOrderItem[],
+    employeeId?: string,
+    voucherId?: string,
+    orderItem: IItemDetail[],
+    status: string,
+    customerId?: string,
 }
