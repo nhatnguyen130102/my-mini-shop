@@ -1,5 +1,4 @@
 import { BaseEntity } from "./base-interface";
-import { IUser } from "./user-interface";
 
 export interface IVoucher extends BaseEntity, UpdateVoucherPayload {
     isDeleted: boolean,

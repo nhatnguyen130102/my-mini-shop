@@ -1,6 +1,5 @@
-// shared/context/SidebarContext.tsx
 'use client'
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 interface SidebarContextType {
     isPinned: boolean;
@@ -9,17 +8,22 @@ interface SidebarContextType {
     togglePin: () => void;
     setIsHovered: (hover: boolean) => void;
     setExpanded: (id: string, expanded: boolean) => void;
-    isOpen: boolean;
+    isOpenFull: boolean;
+    toggleOpen: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
-    const [isPinned, setIsPinned] = useState(true);
+    const [isPinned, setIsPinned] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+    const [isOpenFull, setIsOpenFull] = useState(false);
 
-    const togglePin = useCallback(() => setIsPinned(prev => !prev), []);
+    const togglePin = () => {
+        setIsPinned(!isPinned);
+        setIsOpenFull(isPinned);
+    };
 
     const setExpanded = useCallback((id: string, expanded: boolean) => {
         setExpandedItems(prev => {
@@ -29,13 +33,32 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
         });
     }, []);
 
-    const isOpen = isPinned || isHovered;
+    // Toggle từ TopBar: chỉ áp dụng khi không pin
+    const toggleOpen = () => {
+        setIsPinned(false)
+        setIsOpenFull(prev => !prev);
+    };
+
+    // SidebarContext.tsx
+    useEffect(() => {
+        if (!isHovered) {
+            setExpandedItems(new Set());
+        }
+    }, [isHovered]);
+
+    const value: SidebarContextType = {
+        isPinned,
+        isHovered,
+        expandedItems,
+        isOpenFull,
+        togglePin,
+        setIsHovered,
+        setExpanded,
+        toggleOpen,
+    };
 
     return (
-        <SidebarContext.Provider value={{
-            isPinned, isHovered, expandedItems, isOpen,
-            togglePin, setIsHovered, setExpanded
-        }}>
+        <SidebarContext.Provider value={value}>
             {children}
         </SidebarContext.Provider>
     );

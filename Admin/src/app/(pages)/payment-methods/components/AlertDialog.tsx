@@ -1,4 +1,4 @@
-import { orderMethodService } from '@/common/services/order-method-service';
+import { paymentMethodService } from '@/common/services/payment-method-service';
 import { useOrderStore } from '@/common/stores/order.store';
 import { useNotify } from '@/shared/hooks/useNotify';
 import {
@@ -18,23 +18,23 @@ interface AlertDialogProps {
 }
 
 const AlertDialog = ({ open, onClose, type }: AlertDialogProps) => {
-    const { selectedOrderMethod } = useOrderStore();
+    const { selectedPaymentMethod } = useOrderStore();
     const { notify } = useNotify();
 
     const handleSubmit = async () => {
         try {
             let res;
-            if (!selectedOrderMethod || !selectedOrderMethod.id) {
+            if (!selectedPaymentMethod || !selectedPaymentMethod.id) {
                 notify({ success: false, message: 'Error' });
                 return;
             }
 
             if (type === 'changeStatus') {
-                res = await orderMethodService.changeStatus(selectedOrderMethod.id);
+                res = await paymentMethodService.changeStatus(selectedPaymentMethod.id);
             } else if (type === 'deleteSoft') {
-                res = await orderMethodService.delete(selectedOrderMethod.id);
+                res = await paymentMethodService.delete(selectedPaymentMethod.id);
             } else if (type === 'deleteHard') {
-                res = await orderMethodService.delete(selectedOrderMethod.id, false);
+                res = await paymentMethodService.delete(selectedPaymentMethod.id, false);
             } else {
                 notify({ success: false, message: 'Error' });
                 return;
@@ -66,10 +66,10 @@ const AlertDialog = ({ open, onClose, type }: AlertDialogProps) => {
             <DialogContent>
                 <Typography variant="body1" color="text.secondary">
                     {type === 'deleteSoft'
-                        ? `Bạn có chắc chắn muốn xoá mềm sản phẩm: ${selectedOrderMethod?.name}?`
+                        ? `Bạn có chắc chắn muốn xoá mềm sản phẩm: ${selectedPaymentMethod?.name}?`
                         : type === 'deleteHard'
-                            ? `Bạn có chắc chắn muốn xoá cứng sản phẩm: ${selectedOrderMethod?.name}?`
-                            : `Bạn có chắc chắn muốn thay đổi trạng thái sản phẩm: ${selectedOrderMethod?.name}?`}
+                            ? `Bạn có chắc chắn muốn xoá cứng sản phẩm: ${selectedPaymentMethod?.name}?`
+                            : `Bạn có chắc chắn muốn thay đổi trạng thái sản phẩm: ${selectedPaymentMethod?.name}?`}
                 </Typography>
             </DialogContent>
 

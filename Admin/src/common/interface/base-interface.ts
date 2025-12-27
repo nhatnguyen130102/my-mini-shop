@@ -1,3 +1,5 @@
+import { IProduct } from "./product-interface";
+
 export interface BaseResponse<T> {
     isSuccess: boolean,
     message: string,
@@ -16,4 +18,12 @@ export interface BaseEntity {
 export interface IIdName {
     id: string,
     name: string
+}
+
+export interface IItemDetail {
+    productId: string;
+    product?: IProduct | null;
+    quantity: number;
+    price?: number | null;
+    total?: number | null;
 }

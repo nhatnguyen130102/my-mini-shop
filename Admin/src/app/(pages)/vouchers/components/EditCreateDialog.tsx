@@ -12,22 +12,16 @@ import {
     Switch,
     FormControlLabel,
     Divider,
-    TextField,
 } from '@mui/material';
-import CloseSidebar from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import { TransitionProps } from '@mui/material/transitions';
 import { useFormik } from 'formik';
 import { useEffect } from 'react';
-import { useSidebarStore } from '@/common/stores/sidebar.store';
-
-import { sidebarService } from '@/common/services/sidebar-service';
+import { useVoucherStore } from '@/common/stores/voucher.store';
+import { initalVoucherValue, voucherValueSchema } from '../validate';
+import { voucherService } from '@/common/services/voucher-service';
 import { useNotify } from '@/shared/hooks/useNotify';
 import MiniShopTextField from '@/shared/components/MiniShopTextField';
-import { initalSidebarValue, sidebarValueSchema } from '../validate';
-import { iconService } from '@/common/services/icon-service';
-import MiniShopSelectField from '@/shared/components/MiniShopSelectField';
-import { iconMap } from '@/shared/constants/iconMap';
-import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
 import MiniShopDialog from '@/shared/components/MiniShopDialog';
 
 const Transition = React.forwardRef(function Transition(
@@ -48,49 +42,28 @@ interface EditCreateDialogProps {
 export default function EditCreateDialog({ open, onClose }: EditCreateDialogProps) {
     const { notify } = useNotify();
     const {
-        selectedSidebar,
-        icons: icons,
-        setIcons: setIcons,
-        sidebars: sidebars,
-        selectedParentSidebar: selectedParentSidebar,
-    } = useSidebarStore();
+        selectedVoucher,
+    } = useVoucherStore();
 
-    const title = selectedSidebar
-        ? `Edit Sidebar: ${selectedSidebar.name}`
-        : 'Create Sidebar';
-
-    const allIconName: { id: string; name: string; icon: React.ElementType }[] = React.useMemo(
-        () =>
-            icons.map((item) => ({
-                id: item.id,
-                name: item.name,
-                icon: iconMap[item.iconName] || ViewSidebarOutlinedIcon,
-            })),
-        [icons]
-    );
-
-    const allSidebar: { id: string, name: string }[] = React.useMemo(() =>
-        sidebars.map((item) => ({
-            id: item.id,
-            name: item.name,
-        }))
-        , [sidebars])
+    const title = selectedVoucher
+        ? `Edit Voucher: ${selectedVoucher.name}`
+        : 'Create Voucher';
 
     /* ===================== FORMIK ===================== */
     const formik = useFormik({
-        initialValues: initalSidebarValue,
-        validationSchema: sidebarValueSchema,
+        initialValues: initalVoucherValue,
+        validationSchema: voucherValueSchema,
         onSubmit: async (values) => {
             try {
                 let res;
 
-                if (selectedSidebar?.id) {
-                    res = await sidebarService.update(selectedSidebar.id, {
+                if (selectedVoucher?.id) {
+                    res = await voucherService.update(selectedVoucher.id, {
                         ...values,
-                        id: selectedSidebar.id,
+                        id: selectedVoucher.id,
                     });
                 } else {
-                    res = await sidebarService.create(values);
+                    res = await voucherService.create(values);
                 }
 
                 notify({
@@ -111,40 +84,28 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
     });
 
     /* ===================== FETCH MASTER DATA ===================== */
-    const lastSegment = selectedSidebar?.path?.split("/").pop() ?? "";
-
 
     useEffect(() => {
         if (open) {
             formik.resetForm({
                 values: {
-                    path: lastSegment,
-                    parentId: selectedSidebar?.parentId ?? selectedParentSidebar?.id ?? "",
-                    iconId: selectedSidebar?.iconId ?? "",
-                    name: selectedSidebar?.name ?? '',
-                    description: selectedSidebar?.description ?? '',
-                    isActive: selectedSidebar?.isActive ?? true,
+                    name: selectedVoucher?.name ?? '',
+                    description: selectedVoucher?.description ?? '',
+                    isActive: selectedVoucher?.isActive ?? true,
+                    startDate: selectedVoucher?.startDate ?? '',
+                    endDate: selectedVoucher?.endDate ?? '',
+                    status: selectedVoucher?.status ?? '',
+                    type: selectedVoucher?.type ?? '',
+                    value: selectedVoucher?.value ?? 0,
+                    minimumOrder: selectedVoucher?.minimumOrder ?? 0,
+                    maximumDiscount: selectedVoucher?.maximumDiscount ?? 0,
                 },
             });
         }
-    }, [open, selectedSidebar]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [resIcon] = await Promise.all([
-                    iconService.getAll(),
-                ]);
-
-                setIcons(resIcon?.payload?.data ?? []);
-            } catch (err) {
-                console.error('Fetch data error:', err);
-            }
-        };
-        fetchData();
-    }, []);
+    }, [open, selectedVoucher]);
 
     return (
+
         <MiniShopDialog
             open={open}
             onClose={onClose}
@@ -174,33 +135,40 @@ export default function EditCreateDialog({ open, onClose }: EditCreateDialogProp
                 <MiniShopTextField
                     required
                     formik={formik}
-                    name="name"
-                    label="Tên sidebar"
-                    placeholder="Nhập tên sidebar"
-                />
-
-                <MiniShopSelectField
-                    disabled={selectedSidebar == null}
-                    formik={formik}
-                    name="parentId"
-                    label="Mục cha"
-                    options={allSidebar}
-                />
-
-                <MiniShopSelectField
-                    required
-                    formik={formik}
-                    name="iconId"
-                    label="Icon"
-                    options={allIconName}
+                    name="fullname"
+                    label="Tên người dùng"
+                    placeholder="Nhập tên người dùng"
                 />
 
                 <MiniShopTextField
+                    required
                     formik={formik}
-                    name="path"
-                    label="Path"
-                    placeholder="Nhập tên đường dẫn cuối"
+                    name="email"
+                    label="Email"
+                    placeholder="Nhập email"
                 />
+
+                <MiniShopTextField
+                    required
+                    formik={formik}
+                    name="vouchername"
+                    label="Vouchername"
+                    placeholder="Nhập vouchername"
+                />
+
+                {
+                    !selectedVoucher?.id && (
+                        <MiniShopTextField
+                            required
+                            formik={formik}
+                            name="password"
+                            label="Password"
+                            placeholder="Nhập password"
+                        />
+                    )
+                }
+
+
 
                 <MiniShopTextField
                     gridSize={12}
