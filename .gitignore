@@ -1,0 +1,2 @@
+git rm -r --cached Server/node_modules
+git rm -r --cached Admin/node_modules
