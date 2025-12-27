@@ -55,8 +55,8 @@ export class BaseService {
     async create(data, user) {
         if ("code" in data) delete data.code;
         data.code = RandomCode(this.codePrefix);
-        const exists = await this.model.findOne({ name: data.name })
-        if (exists) throw new Error(`This item ${data.name}} already existed`);
+        const exists = await this.model.exists({ name: data.name });
+        if (exists) throw new Error(`Item "${data.name}" already exists`);
 
         if (user && user.id) {
             data.createdBy = user.email;
