@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "scripts": {
+    "fe": "npm run dev --prefix Admin",
+    "be": "nodemon Server/server.js --prefix Server",
+    "start": "npm-run-all --parallel fe be"
+  }
+}
